@@ -1,14 +1,16 @@
+// script.js
+
 var board = document.getElementById('gameBoard');
 var currentPlayer = 'userA';
 var columns = 7;
 var rows = 6;
 var gameEnded = false; // 游戏状态标志
 var isDropping = false; // 控制落子操作的标志
-
 var playerNames = {
     'userA': '红方',
     'userB': '蓝方'
 };
+
 
 function createBoard() {
     for (var i = 0; i < columns * rows; i++) {
