@@ -17,6 +17,7 @@ body {
     align-items: center;
     gap: 20px;
     padding: 30px 0px;
+    justify-content: space-between;
 }
 #victoryPopup {
     color:var(--card-text-color) !important;
@@ -42,10 +43,10 @@ body {
     top: calc(-1 * var(--piece-size) / 2);
 }
 .card-piece.userA {
-    box-shadow: 0px 10px 20px 0px var(--userA-border-color);
+    box-shadow: 0px 10px 20px 0px var(--userA-shadow-color);
 }
 .card-piece.userB {
-    box-shadow: 0px 10px 20px 0px var(--userB-border-color);
+    box-shadow: 0px 10px 20px 0px var(--userB-shadow-color);
 }
 #title {
     display: flex;

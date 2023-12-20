@@ -19,8 +19,10 @@
   --button-text-color:#fff;
   --userA-bg-color:hsl(0, 100%, 50%);
   --userA-border-color:hsl(0, 100%, 40%);
+  --userA-shadow-color:hsla(0, 100%, 50%, 0.25);
   --userB-bg-color:hsl(215, 100%, 50%);
   --userB-border-color:hsl(215, 100%, 40%);
+  --userB-shadow-color:hsla(215, 100%, 50%, 0.25);
   --user-color:#ffffff7c;
   --victoryPopup-bg-color:rgba(255, 255, 255, 0.5);
 }
@@ -38,8 +40,10 @@
             --button-text-color:#fff;
             --userA-bg-color:hsl(0, 100%, 50%);
             --userA-border-color:hsl(0, 100%, 40%);
+            --userA-shadow-color:hsla(0, 100%, 50%, 0.25);
             --userB-bg-color:hsl(215, 100%, 50%);
             --userB-border-color:hsl(215, 100%, 40%);
+            --userB-shadow-color:hsla(215, 100%, 50%, 0.25);
             --user-color:#ffffff7c;
             --victoryPopup-bg-color:rgba(0, 0, 0, 0.5);
         }
