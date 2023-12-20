@@ -1,17 +1,18 @@
 /* 参数配置 */
 :root {
-    --piece-size: calc(5vw); /* 棋子大小 */
-    --piece-border: 5px; /* 棋子描边 */
-    --cell-border: 0.25px; /* 棋盘格描边 */
-    --board-gap: 5px; /* 棋盘格间距 */
-    --star-size: 20px;
+    --piece-size: calc(6vw); /* 棋子大小 */
+    --piece-border: calc(var(--piece-size) * 0.1); /* 棋子描边 */
+    --board-gap: calc(1vw); /* 棋盘格间距 */
+    --star-size: calc(var(--piece-size) * 0.45); /* 星星大小 */
 }
 
 /* 亮色模式变量 */
 @media (prefers-color-scheme: light) {
 :root {
   --bg-color:#f0f0f0;
+  --card-color:#000;
   --text-color:#000;
+  --card-text-color:#fff;
   --board-border-color:#e6e6e6;
   --board-bg-color:#fff;
   --button-bg-color:#0254f3;
@@ -27,6 +28,8 @@
     @media (prefers-color-scheme: dark) {
         :root {
             --bg-color:#2a2a2a;
+            --card-color:#fff;
+            --card-text-color:#000;
             --text-color:#ffffff;
             --board-border-color:#e6e6e600;
             --board-bg-color:#000000;
@@ -47,6 +50,6 @@
   
   @media (min-width: 1200px) {
       :root {
-          --piece-size: calc(3vw); /* 在大屏幕上减小大小 */
+          --piece-size: calc(6vw); /* 在大屏幕上减小大小 */
       }
   }
