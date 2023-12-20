@@ -1,6 +1,6 @@
 /* 参数配置 */
 :root {
-    --piece-size: 50px; /* 棋子大小 */
+    --piece-size: calc(5vw); /* 棋子大小 */
     --piece-border: 5px; /* 棋子描边 */
     --cell-border: 0.25px; /* 棋盘格描边 */
     --board-gap: 5px; /* 棋盘格间距 */
@@ -39,3 +39,14 @@
             --user-color:#ffffff7c;
         }
     }
+    @media (max-width: 600px) {
+      :root {
+          --piece-size: calc(10vw); /* 在小屏幕上增加大小 */
+      }
+  }
+  
+  @media (min-width: 1200px) {
+      :root {
+          --piece-size: calc(3vw); /* 在大屏幕上减小大小 */
+      }
+  }
