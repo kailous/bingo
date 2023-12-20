@@ -22,6 +22,7 @@
   --userB-bg-color:hsl(215, 100%, 50%);
   --userB-border-color:hsl(215, 100%, 40%);
   --user-color:#ffffff7c;
+  --victoryPopup-bg-color:rgba(255, 255, 255, 0.5);
 }
 }
   /* 暗色模式 */
@@ -40,11 +41,12 @@
             --userB-bg-color:hsl(215, 100%, 50%);
             --userB-border-color:hsl(215, 100%, 40%);
             --user-color:#ffffff7c;
+            --victoryPopup-bg-color:rgba(0, 0, 0, 0.5);
         }
     }
     @media (max-width: 600px) {
       :root {
-          --piece-size: calc(10vw); /* 在小屏幕上增加大小 */
+          --piece-size: calc(12vw); /* 在小屏幕上增加大小 */
       }
   }
   
