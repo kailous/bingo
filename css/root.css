@@ -1,0 +1,41 @@
+/* 参数配置 */
+:root {
+    --piece-size: 50px; /* 棋子大小 */
+    --piece-border: 5px; /* 棋子描边 */
+    --cell-border: 0.25px; /* 棋盘格描边 */
+    --board-gap: 5px; /* 棋盘格间距 */
+    --star-size: 20px;
+}
+
+/* 亮色模式变量 */
+@media (prefers-color-scheme: light) {
+:root {
+  --bg-color:#f0f0f0;
+  --text-color:#000;
+  --board-border-color:#e6e6e6;
+  --board-bg-color:#fff;
+  --button-bg-color:#0254f3;
+  --button-text-color:#fff;
+  --userA-bg-color:hsl(0, 100%, 50%);
+  --userA-border-color:hsl(0, 100%, 40%);
+  --userB-bg-color:hsl(215, 100%, 50%);
+  --userB-border-color:hsl(215, 100%, 40%);
+  --user-color:#ffffff7c;
+}
+}
+  /* 暗色模式 */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg-color:#2a2a2a;
+            --text-color:#ffffff;
+            --board-border-color:#e6e6e600;
+            --board-bg-color:#000000;
+            --button-bg-color:#0254f3;
+            --button-text-color:#fff;
+            --userA-bg-color:hsl(0, 100%, 50%);
+            --userA-border-color:hsl(0, 100%, 40%);
+            --userB-bg-color:hsl(215, 100%, 50%);
+            --userB-border-color:hsl(215, 100%, 40%);
+            --user-color:#ffffff7c;
+        }
+    }
