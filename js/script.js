@@ -3,12 +3,13 @@ var currentPlayer = 'userA';
 var columns = 7;
 var rows = 6;
 var gameEnded = false; // 游戏状态标志
-// 玩家名称
+var isDropping = false; // 控制落子操作的标志
+
 var playerNames = {
     'userA': '红方',
     'userB': '蓝方'
 };
-// 创建棋盘
+
 function createBoard() {
     for (var i = 0; i < columns * rows; i++) {
         var cell = document.createElement('div');
@@ -18,19 +19,22 @@ function createBoard() {
     }
 }
 
-// 下棋
 function dropPiece() {
-    if (gameEnded) {
-        return; // 如果游戏已结束，不执行任何操作
+    if (gameEnded || isDropping) {
+        return; // 如果游戏已结束或正在进行落子操作，不执行任何操作
     }
 
     var columnCells = getColumnCells(getColumnIndex(this));
+    var hasSpace = false;
+
     for (var i = columnCells.length - 1; i >= 0; i--) {
         if (!columnCells[i].hasChildNodes()) {
+            hasSpace = true;
+            isDropping = true; // 开始落子操作
+
             var piece = document.createElement('div');
             piece.classList.add('piece', currentPlayer, 'animate-drop');
             
-            // 添加Iconpark Star图标
             var icon = document.createElement('iconpark-icon');
             icon.setAttribute('name', 'Star');
             piece.appendChild(icon);
@@ -40,22 +44,28 @@ function dropPiece() {
             piece.addEventListener('animationend', () => {
                 if (checkWin(currentPlayer)) {
                     showVictoryPopup(currentPlayer);
-                    gameEnded = true; // 设置游戏结束标志
-                    return;
+                    gameEnded = true;
+                } else {
+                    currentPlayer = currentPlayer === 'userA' ? 'userB' : 'userA';
                 }
-                currentPlayer = currentPlayer === 'userA' ? 'userB' : 'userA';
+                isDropping = false; // 落子操作完成
             }, { once: true });
 
             break;
         }
     }
+
+    if (!hasSpace) {
+        // 如果这一列已满，直接返回而不更改isDropping
+        return;
+    }
 }
+
 
 function getColumnIndex(cell) {
     return Array.prototype.indexOf.call(board.children, cell) % columns;
 }
 
-// 获取列
 function getColumnCells(index) {
     var columnCells = [];
     for (var i = index; i < board.children.length; i += columns) {
@@ -64,7 +74,6 @@ function getColumnCells(index) {
     return columnCells;
 }
 
-// 检查是否胜利
 function checkWin(player) {
     return checkLine(player, 0, 1) ||
            checkLine(player, 1, 0) ||
@@ -72,7 +81,6 @@ function checkWin(player) {
            checkLine(player, 1, -1);
 }
 
-// 检查行
 function checkLine(player, deltaRow, deltaCol) {
     for (var row = 0; row < rows; row++) {
         for (var col = 0; col < columns; col++) {
@@ -84,7 +92,6 @@ function checkLine(player, deltaRow, deltaCol) {
     return false;
 }
 
-// 检查四个方向
 function lineOfFour(player, startRow, startCol, deltaRow, deltaCol) {
     var count = 0;
     for (var i = 0; i < 4; i++) {
@@ -100,24 +107,22 @@ function lineOfFour(player, startRow, startCol, deltaRow, deltaCol) {
     }
     return count == 4;
 }
-// 显示胜利弹窗
+
 function showVictoryPopup(player) {
     var victoryPopup = document.getElementById('victoryPopup');
     var victoryMessage = document.getElementById('victoryMessage');
-    var playerName = playerNames[player] || player; // 使用映射的名称或默认到类名
+    var victoryPiece = document.getElementById('victoryPiece');
+    victoryMessage.innerText = playerNames[player] + ' 胜利!';
     victoryPiece.className = 'card-piece ' + player;
     victoryPieceL.className = 'card-piece l ' + player;
     victoryPieceR.className = 'card-piece r ' + player;
-    victoryMessage.innerText = playerName + ' 胜利!';
     victoryPopup.style.display = 'block';
 }
 
-// 关闭胜利弹窗
 function closeVictoryPopup() {
     document.getElementById('victoryPopup').style.display = 'none';
 }
 
-// 重置游戏
 function resetGame() {
     var cells = document.querySelectorAll('.cell');
     cells.forEach(cell => {
@@ -126,9 +131,9 @@ function resetGame() {
         }
     });
     currentPlayer = 'userA';
-    gameEnded = false; // 重置游戏结束标志
+    gameEnded = false;
+    isDropping = false;
     closeVictoryPopup();
 }
 
-// 开始游戏
 createBoard();
