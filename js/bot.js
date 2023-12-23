@@ -1,18 +1,18 @@
-document.addEventListener('DOMContentLoaded', function() {
-    var urlParams = new URLSearchParams(window.location.search);
-    var botEnabled = urlParams.has('bot') && urlParams.get('bot') === 'ai';
+// 监视开关按钮的状态，控制 AI 对手的开启和关闭
+document.getElementById('togBtn').addEventListener('change', function () {
+    if (this.checked) {
+        if (typeof enableAI === "function") {
+            enableAI();
+        }
 
-    if (botEnabled) {
-        enableAI();
+    } else {
+        if (typeof disableAI === "function") {
+            disableAI(); // 调用关闭 AI 对手的函数
+        }
     }
 });
 
-function enableAI() {
-    console.log("AI 对手已启动");
-    var board = document.getElementById('gameBoard');
-    assignBingoId(board); // 给棋盘单元格分配binggo-id
-
-
+// 移动棋子
 function randomMove(board, columns) {
     var validColumns = [];
     for (var i = 0; i < columns; i++) {
@@ -29,6 +29,7 @@ function randomMove(board, columns) {
     return null;
 }
 
+// 检查棋局状态
 function findBestMove(board, columns, rows, player) {
     // 防守：检查是否需要阻止对方获胜
     var move = defensiveMove(board, columns, rows, player === 'userA' ? 'userB' : 'userA');
@@ -42,16 +43,19 @@ function findBestMove(board, columns, rows, player) {
     return randomMove(board, columns);
 }
 
+// 检查是否获胜
 function defensiveMove(board, columns, rows, opponent) {
     // 模拟每个单元格，检查对方是否将在下一步获胜
     return simulateMove(board, columns, rows, opponent);
 }
 
+// 检查是否获胜
 function offensiveMove(board, columns, rows, player) {
     // 模拟每个单元格，检查自己是否能在下一步获胜
     return simulateMove(board, columns, rows, player);
 }
 
+// 模拟落子
 function simulateMove(board, columns, rows, player) {
     if (!board || !board.children) {
         console.error('Board or board children are undefined');
@@ -76,16 +80,18 @@ function simulateMove(board, columns, rows, player) {
     return null;
 }
 
+// 检查是否获胜
 function createMockPiece(player) {
     var mockPiece = document.createElement('div');
     mockPiece.classList.add('piece', player);
     return mockPiece;
 }
 
-document.getElementById('gameBoard').addEventListener('click', function(event) {
+// 将点击事件处理封装成独立的函数
+function handleClick(event) {
     if (currentPlayer === 'userA' && event.target.classList.contains('cell') && !gameEnded) {
         console.log("红方落子: ", event.target.getAttribute('binggo-id'));
-        setTimeout(function() {
+        setTimeout(function () {
             if (currentPlayer === 'userB') {
                 var bestMove = findBestMove(board, columns, rows, 'userB');
                 if (bestMove) {
@@ -95,9 +101,26 @@ document.getElementById('gameBoard').addEventListener('click', function(event) {
             }
         }, 1000);
     }
-});
 }
 
+// 将 AI 对手的开启和关闭封装成独立的函数
+function enableAI() {
+    console.log('AI 对手开启');
+    var board = document.getElementById('gameBoard');
+    assignBingoId(board); // 给棋盘单元格分配binggo-id
+    // 添加点击事件监听器，调用上面的处理函数
+    board.addEventListener('click', handleClick);
+}
+
+// 将 AI 对手的开启和关闭封装成独立的函数
+function disableAI() {
+    console.log('AI 对手关闭');
+    var board = document.getElementById('gameBoard');
+    // 移除点击事件监听器
+    board.removeEventListener('click', handleClick);
+}
+
+// 给棋盘单元格分配binggo-id
 function assignBingoId(board) {
     var cells = board.getElementsByClassName('cell');
     for (var i = 0; i < cells.length; i++) {

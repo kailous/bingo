@@ -1,6 +1,6 @@
 var minimaxDepth = 2; // 默认深度
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     var urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('bot')) {
         minimaxDepth = parseInt(urlParams.get('bot'), 10) || minimaxDepth;
@@ -10,9 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function enableAI() {
     var board = document.getElementById('gameBoard');
-    document.getElementById('gameBoard').addEventListener('click', function(event) {
+    document.getElementById('gameBoard').addEventListener('click', function (event) {
         if (currentPlayer === 'userA' && event.target.classList.contains('cell') && !gameEnded) {
-            setTimeout(function() {
+            setTimeout(function () {
                 if (currentPlayer === 'userB') {
                     var bestMove = findBestMove(board, columns, rows, 'userB');
                     if (bestMove) {

@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Bingo</title>
     <meta charset="utf-8" />
@@ -43,15 +43,27 @@
     <!-- 引入css -->
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/root.css" />
-    <script src="js/icons.js"></script>    
+    <script src="js/icons.js"></script>
 </head>
+
 <body>
     <div id="title">
         <h1>Bingo</h1>
         <p>宾果棋 / 四子棋 / 下落棋</p>
     </div>
     <div id="gameBoard"></div>
-    <button class="resetGame" onclick="resetGame()">重新开始</button>
+    <!-- 游戏设置 -->
+    <div id="gamesSetup">
+        <button class="resetGame" onclick="resetGame()">重新开始</button>
+        <!-- 插入一个开关 -->
+        <div class="ai">
+            <p>开启机器人</p>
+            <label class="switch">
+                <input type="checkbox" id="togBtn">
+                <div class="slider round"></div>
+            </label>
+        </div>
+    </div>
     <!-- 胜利弹窗 -->
     <div id="victoryPopup" class="popup" style="display: none;">
         <div id="card">
@@ -64,13 +76,14 @@
             <div id="victoryPiece" class="card-piece">
                 <iconpark-icon name="Star"></iconpark-icon>
             </div>
-        <h1>Bingo !!</h1>
-        <div id="victoryMessage"></div>
-        <button onclick="closeVictoryPopup(),resetGame()">重新开始</button>
-    </div>
+            <h1>Bingo !!</h1>
+            <div id="victoryMessage"></div>
+            <button onclick="closeVictoryPopup(),resetGame()">重新开始</button>
+        </div>
     </div>
     <!-- 引入本地js -->
     <script src="js/script.js"></script>
     <script src="js/bot.js"></script>
 </body>
+
 </html>

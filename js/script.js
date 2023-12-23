@@ -36,7 +36,7 @@ function dropPiece() {
 
             var piece = document.createElement('div');
             piece.classList.add('piece', currentPlayer, 'animate-drop');
-            
+
             var icon = document.createElement('iconpark-icon');
             // 添加color属性，用于设置图标颜色
             // icon.setAttribute('color', currentPlayer === 'userA' ? '#FF6666' : '#6B96FA');
@@ -84,9 +84,9 @@ function getColumnCells(index) {
 
 function checkWin(player) {
     return checkLine(player, 0, 1) ||
-           checkLine(player, 1, 0) ||
-           checkLine(player, 1, 1) ||
-           checkLine(player, 1, -1);
+        checkLine(player, 1, 0) ||
+        checkLine(player, 1, 1) ||
+        checkLine(player, 1, -1);
 }
 
 function checkLine(player, deltaRow, deltaCol) {
