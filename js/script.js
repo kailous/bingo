@@ -38,6 +38,12 @@ function dropPiece() {
             piece.classList.add('piece', currentPlayer, 'animate-drop');
             
             var icon = document.createElement('iconpark-icon');
+            // 添加color属性，用于设置图标颜色
+            icon.setAttribute('color', currentPlayer === 'userA' ? '#FF6666' : '#6B96FA');
+            // 添加stroke属性，用于设置图标描边颜色
+            icon.setAttribute('stroke', currentPlayer === 'userA' ? '#fff' : '#fff');
+            // 添加stroke-width属性，用于设置图标描边宽度
+            icon.setAttribute('stroke-width', '10');
             icon.setAttribute('name', 'Star');
             piece.appendChild(icon);
 

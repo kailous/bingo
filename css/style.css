@@ -42,12 +42,6 @@ body {
     position: absolute;
     top: calc(-1 * var(--piece-size) / 2);
 }
-.card-piece.userA {
-    box-shadow: 0px 10px 20px 0px var(--userA-shadow-color);
-}
-.card-piece.userB {
-    box-shadow: 0px 10px 20px 0px var(--userB-shadow-color);
-}
 #title {
     display: flex;
     gap: 10px;
@@ -82,7 +76,8 @@ p {
     width: var(--piece-size);
     height: var(--piece-size);
     background-color: var(--board-bg-color);
-    /* border: var(--cell-border) solid var(--board-border-color); */
+    box-shadow: 0px 4px 10px 5px var(--board-Ishadow-color) inset, 0px 0px 20px 0px var(--board-shadow-color);
+    border: var(--cell-border) solid var(--board-border-color);
     border-radius: 50%;
     cursor: pointer;
     position: relative;
@@ -147,11 +142,9 @@ button {
         font-size: 14px;
         cursor: pointer;
 }
-
 .userA, .userB {
     display: inline-flex;
     justify-content: center;
-    color: var(--user-color);
     font-size: var(--star-size);
     line-height: var(--star-size);
     border: var(--piece-border) solid;
@@ -159,15 +152,30 @@ button {
     height: calc(var(--piece-size) - var(--piece-border) * 2);
     align-items: center;
 }
-iconpark-icon {
-    width: var(--star-size);
-    height: var(--star-size);
-}
 .userA {
     background-color: var(--userA-bg-color);
     border-color: var(--userA-border-color);
+    box-shadow: 0px 5px 30px 0px rgba(255, 0, 0, 0.50), 0px 4px 7px 9px #CC0100 inset;
 }
 .userB {
     background-color: var(--userB-bg-color);
     border-color: var(--userB-border-color);
+    box-shadow: 0px 5px 30px 0px rgba(1, 107, 255, 0.50), 0px 4px 7px 9px #05C inset;
+}
+.card-piece.userA {
+    box-shadow: 0px 5px 30px 0px rgba(255, 0, 0, 0.50), 0px 4px 7px 9px #CC0100 inset;
+}
+.card-piece.userB {
+    box-shadow: 0px 5px 30px 0px rgba(1, 107, 255, 0.50), 0px 4px 7px 9px #05C inset;
+}
+iconpark-icon {
+    width: var(--star-size);
+    height: var(--star-size);
+}
+.userA iconpark-icon {
+    color: var(--userA-border-color);
+    stroke: aliceblue;
+}
+.userB iconpark-icon {
+    color: var(--userB-border-color);
 }

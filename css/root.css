@@ -4,47 +4,56 @@
     --piece-border: calc(var(--piece-size) * 0.1); /* 棋子描边 */
     --board-gap: calc(1vw); /* 棋盘格间距 */
     --star-size: calc(var(--piece-size) * 0.45); /* 星星大小 */
+    --cell-border: 1px; /* 叫子棋盘大小 */
 }
 
 /* 亮色模式变量 */
 @media (prefers-color-scheme: light) {
 :root {
-  --bg-color:#f0f0f0;
+  --bg-color:#F0F0F0;
   --card-color:#000;
   --text-color:#000;
   --card-text-color:#fff;
   --board-border-color:#e6e6e6;
-  --board-bg-color:#fff;
+  --board-bg-color:#919191;
+  --board-Ishadow-color:hsl(0deg 0% 0% / 25%);
+  --board-shadow-color:hsl(0deg 0% 0% / 15%);
   --button-bg-color:#0254f3;
   --button-text-color:#fff;
-  --userA-bg-color:hsl(0, 100%, 50%);
-  --userA-border-color:hsl(0, 100%, 40%);
-  --userA-shadow-color:hsla(0, 100%, 50%, 0.25);
-  --userB-bg-color:hsl(215, 100%, 50%);
-  --userB-border-color:hsl(215, 100%, 40%);
-  --userB-shadow-color:hsla(215, 100%, 50%, 0.25);
-  --user-color:#ffffff7c;
+  --userA-bg-color:hsl(0deg 100% 50% / 100%);
+  --userA-border-color:hsl(10deg 100% 60% / 100%);
+  --userA-shadow-color:hsl(0deg 100% 50% / 25%);
+  --userA-star-color:hsl(0deg 100% 63% / 100%);
+  --userB-bg-color:hsl(215deg 100% 50% / 100%);
+  --userB-border-color:hsl(210deg 100% 60% / 100%);
+  --userB-shadow-color:hsl(215deg 100% 50% / 25%);
+  --userB-star-color:hsl(222deg 93% 66% / 100%);
+  --user-color:hsl(0deg 0% 100% / 50%);
   --victoryPopup-bg-color:rgba(255, 255, 255, 0.5);
 }
 }
   /* 暗色模式 */
     @media (prefers-color-scheme: dark) {
         :root {
-            --bg-color:#2a2a2a;
+            --bg-color:#262626;
             --card-color:#fff;
             --card-text-color:#000;
             --text-color:#ffffff;
-            --board-border-color:#e6e6e600;
-            --board-bg-color:#000000;
+            --board-border-color:#343434;
+            --board-bg-color:#141414;
+            --board-Ishadow-color:hsl(0deg 0% 0% / 50%);
+            --board-shadow-color:#34333388;
             --button-bg-color:#0254f3;
             --button-text-color:#fff;
-            --userA-bg-color:hsl(0, 100%, 50%);
-            --userA-border-color:hsl(0, 100%, 40%);
-            --userA-shadow-color:hsla(0, 100%, 50%, 0.25);
-            --userB-bg-color:hsl(215, 100%, 50%);
-            --userB-border-color:hsl(215, 100%, 40%);
-            --userB-shadow-color:hsla(215, 100%, 50%, 0.25);
-            --user-color:#ffffff7c;
+            --userA-bg-color:hsl(0deg 100% 50% / 100%);
+            --userA-border-color:hsl(10deg 100% 60% / 100%);
+            --userA-shadow-color:hsl(0deg 100% 50% / 25%);
+            --userA-star-color:hsl(0deg 100% 63% / 100%);
+            --userB-bg-color:hsl(215deg 100% 50% / 100%);
+            --userB-border-color:hsl(210deg 100% 60% / 100%);
+            --userB-shadow-color:hsl(215deg 100% 50% / 25%);
+            --userB-star-color:hsl(222deg 93% 66% / 100%);
+            --user-color:hsl(0deg 0% 100% / 50%);
             --victoryPopup-bg-color:rgba(0, 0, 0, 0.5);
         }
     }
