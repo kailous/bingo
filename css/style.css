@@ -222,7 +222,7 @@ iconpark-icon {
 /* 设置 */
 #gamesSetup {
     display: flex;
-    width: calc(6vw * 7 + 1vw * 6 + 7 * 2px - 20px *2);
+    width: calc(var(--piece-size) * 7 + var(--board-gap) * 6 + 7 * 2px - 20px *2);
     padding: 20px;
     background: var(--board-bg-color);
     border-radius: 20px;
