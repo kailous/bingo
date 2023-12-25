@@ -145,7 +145,7 @@ function showVictoryPopup(player) {
 }
 // 保存游戏记录
 function saveConsoleOutputToLocal() {
-    const consoleOutput = JSON.parse(localStorage.getItem('consoleOutput')) || [];
+    const consoleOutput = JSON.parse(localStorage.getItem('GameLog')) || [];
     const originalLog = console.log;
 
     // 重定向控制台输出到数组
