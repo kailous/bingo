@@ -31,17 +31,80 @@ function makeAIDecision() {
 
 // 寻找最佳移动
 function findBestMove() {
-    // 防御性移动
-    let defensiveMove = findDefensiveMove();
-    if (defensiveMove) return defensiveMove;
+    // 评估局势，根据局势调整策略
+    let situation = assessSituation();
 
-    // 进攻性移动
-    let offensiveMove = findOffensiveMove();
-    if (offensiveMove) return offensiveMove;
+    // 根据局势采取不同的行动
+    if (situation === 'defensive') {
+        let move = findDefensiveMove();
+        if (move) return move;
+    } else if (situation === 'offensive') {
+        let move = findOffensiveMove();
+        if (move) return move;
+    }
 
-    // 随机移动
-    return randomMove();
+    // 如果没有明显的策略，则采取中间游戏策略或随机移动
+    return midGameStrategy() || randomMove();
 }
+
+function assessSituation() {
+    // 检查 AI 是否有即将获胜的机会
+    if (findOffensiveMove()) {
+        return 'offensive';
+    }
+
+    // 检查对手是否有即将获胜的机会
+    if (findDefensiveMove()) {
+        return 'defensive';
+    }
+
+    // 如果没有明显的获胜机会，考虑中间游戏策略
+    return 'midgame';
+}
+
+
+function midGameStrategy() {
+    let bestMove = null;
+    let maxScore = 0;
+
+    for (let col = 0; col < columns; col++) {
+        let columnCells = getColumnCells(col);
+        for (let row = columnCells.length - 1; row >= 0; row--) {
+            if (!columnCells[row].hasChildNodes()) {
+                // 评估每个可用位置的得分
+                let score = evaluatePositionScore(col, row);
+
+                // 选择得分最高的移动
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestMove = columnCells[row];
+                }
+
+                break; // 只考虑每列的最低可用位置
+            }
+        }
+    }
+
+    return bestMove;
+}
+
+function evaluatePositionScore(col, row) {
+    // 根据特定的位置评估得分
+    // 这里的逻辑可以根据游戏的实际规则来调整
+    // 例如，考虑到建立获胜机会或阻断对手获胜路径的潜力
+    // 返回一个数值表示该位置的得分
+    let score = 0;
+
+    // 示例：增加得分如果位置旁边有相同颜色的棋子
+    // 这里的代码应根据您的具体游戏规则进行调整
+
+    // 检查水平、垂直和对角线方向上的潜在得分
+    // ...
+
+    return score;
+}
+
+
 
 // 创建模拟棋子
 function createMockPiece(player) {
