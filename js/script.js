@@ -78,12 +78,10 @@ function dropPiece() {
     // 落子操作完成后，输出棋盘状态，如果已经输出过，刷新棋盘状态。
     console.clear();
     printBoard();
-    // 在控制台 输出当前落子位置
-    // 更新单元格的行号
-var row = i + 1;
-columnCells[i].setAttribute('rows', row);
-
+    var row = i + 1;
+    columnCells[i].setAttribute('rows', row);
     console.log(playerNames[currentPlayer] + '落子：' + columnCells[i].getAttribute('columns') + ' - ' + columnCells[i].getAttribute('rows'));
+
 }
 
 
@@ -142,9 +140,32 @@ function showVictoryPopup(player) {
     victoryPieceL.className = 'card-piece l ' + player;
     victoryPieceR.className = 'card-piece r ' + player;
     victoryPopup.style.display = 'block';
-    // 控制台输出胜利信息
-    console.log(playerNames[player] + ' 胜利!');
+    // 保存游戏记录
+    saveConsoleOutputToLocal()
 }
+// 保存游戏记录
+function saveConsoleOutputToLocal() {
+    const consoleOutput = JSON.parse(localStorage.getItem('consoleOutput')) || [];
+    const originalLog = console.log;
+
+    // 重定向控制台输出到数组
+    console.log = function () {
+        const logs = Array.from(arguments).map(String); // 将参数转换为字符串
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            message: logs.join(' '), // 将多个参数合并成一个字符串
+        };
+        consoleOutput.push(logEntry);
+        originalLog.apply(console, arguments);
+    };
+    // 重置控制台输出
+    console.clear();
+    printBoard();
+
+    // 将控制台输出保存到localStorage
+    localStorage.setItem('consoleOutput', JSON.stringify(consoleOutput));
+}
+
 
 function closeVictoryPopup() {
     document.getElementById('victoryPopup').style.display = 'none';
@@ -183,7 +204,18 @@ function printBoard() {
         }
         boardState.push('|' + rowState.join('|') + '|');
     }
-    console.log(boardState.join('\n'));
+    
+    // 判断是否胜利，如果胜利，控制台输出胜利信息
+    if (checkWin(currentPlayer)) {
+        // 获取胜利玩家
+        const player = currentPlayer === 'userA' ? 'userA' : 'userB';
+        // 控制台输出胜利信息
+        console.log(boardState.join('\n')+ '\n' + playerNames[player] + ' 胜利!');
+    } else {
+        console.log(boardState.join('\n'));
+        
+
+    }
 }
 // 给棋盘单元格分配binggo-id
 function assignBingoId(board) {
