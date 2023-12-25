@@ -31,21 +31,146 @@ function makeAIDecision() {
 
 // 寻找最佳移动
 function findBestMove() {
-    // 评估局势，根据局势调整策略
-    let situation = assessSituation();
+    let bestScore = -Infinity;
+    let bestMove = null;
 
-    // 根据局势采取不同的行动
-    if (situation === 'defensive') {
-        let move = findDefensiveMove();
-        if (move) return move;
-    } else if (situation === 'offensive') {
-        let move = findOffensiveMove();
-        if (move) return move;
+    for (let col = 0; col < columns; col++) {
+        let columnCells = getColumnCells(col);
+        for (let row = columnCells.length - 1; row >= 0; row--) {
+            if (!columnCells[row].hasChildNodes()) {
+                columnCells[row].appendChild(createMockPiece('userB'));
+                let score = minimax(0, false);
+                columnCells[row].removeChild(columnCells[row].firstChild);
+                
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = columnCells[row];
+                }
+                break;
+            }
+        }
     }
 
-    // 如果没有明显的策略，则采取中间游戏策略或随机移动
-    return midGameStrategy() || randomMove();
+    return bestMove;
 }
+
+
+function minimax(depth, isMaximizingPlayer) {
+    if (depth === 2) {
+        return evaluateBoard();
+    }
+
+    if (isMaximizingPlayer) {
+        let bestScore = -Infinity;
+        for (let col = 0; col < columns; col++) {
+            let columnCells = getColumnCells(col);
+            for (let row = columnCells.length - 1; row >= 0; row--) {
+                if (!columnCells[row].hasChildNodes()) {
+                    columnCells[row].appendChild(createMockPiece('userB'));
+                    let score = minimax(depth + 1, false);
+                    columnCells[row].removeChild(columnCells[row].firstChild);
+                    bestScore = Math.max(score, bestScore);
+                    break;
+                }
+            }
+        }
+        return bestScore;
+    } else {
+        let bestScore = Infinity;
+        for (let col = 0; col < columns; col++) {
+            let columnCells = getColumnCells(col);
+            for (let row = columnCells.length - 1; row >= 0; row--) {
+                if (!columnCells[row].hasChildNodes()) {
+                    columnCells[row].appendChild(createMockPiece('userA'));
+                    let score = minimax(depth + 1, true);
+                    columnCells[row].removeChild(columnCells[row].firstChild);
+                    bestScore = Math.min(score, bestScore);
+                    break;
+                }
+            }
+        }
+        return bestScore;
+    }
+}
+
+
+function evaluateBoard() {
+    let score = 0;
+
+    // 评估 AI ('userB') 获胜的机会
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < columns; col++) {
+            score += evaluatePosition('userB', col, row);
+        }
+    }
+
+    // 评估对手 ('userA') 获胜的机会并相应减分
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < columns; col++) {
+            score -= evaluatePosition('userA', col, row);
+        }
+    }
+
+    return score;
+}
+function evaluatePosition(player, col, row) {
+    let score = 0;
+
+    // 如果这个位置能让userB获胜，增加得分
+    score += checkLineScore(player, col, row, 11, 0);  // 垂直
+    score += checkLineScore(player, col, row, 0, 1);  // 水平
+    score += checkLineScore(player, col, row, 1, -1);  // 对角线
+    score += checkLineScore(player, col, row, 1, -1); // 反对角线
+
+    // 如果这个位置能阻止userA获胜，增加得分
+    let opponent = player === 'userA' ? 'userB' : 'userA';
+    score += checkLineScore(opponent, col, row, 1, 0);  // 垂直
+    score += checkLineScore(opponent, col, row, 0, 1);  // 水平
+    score += checkLineScore(opponent, col, row, 1, -1);  // 对角线
+    score += checkLineScore(opponent, col, row, 1, -1); // 反对角线
+
+    // 如果这个位置能让userA获胜，减少得分
+    score -= checkLineScore('userA', col, row, 11, 0);  // 垂直
+    score -= checkLineScore('userA', col, row, 0, 1);  // 水平
+    score -= checkLineScore('userA', col, row, 1, -1);  // 对角线
+    score -= checkLineScore('userA', col, row, 1, -1); // 反对角线
+    // 找出最佳移动并输出在控制台
+    if (score >= 2) {
+        // console.log('AI 获胜的机会');
+        console.log(score);
+    } else if (score <= -2) {
+        // console.log('AI 阻止对手获胜的机会');
+        console.log(score);
+    }
+
+    return score;
+}
+
+function checkLineScore(player, startCol, startRow, deltaCol, deltaRow) {
+    let count = 0;
+    for (let i = 0; i < 4; i++) {
+        // 检查边界
+        // col 应为 A 到 G
+        // row 应为 1 到 6
+        let col = startCol + i * deltaCol;
+        let row = startRow + i * deltaRow;
+        if (col < 0 || col >= columns || row < 0 || row >= rows) {
+            break;
+        }
+        // 检查当前位置是否有棋子
+        let cellIndex = row * columns + col;
+        let cell = board.children[cellIndex];
+        if (cell.hasChildNodes() && cell.firstChild.classList.contains(player)) {
+            count++;
+        } else {
+            break;
+        }
+    }
+    return count;
+}
+
+
+
 
 function assessSituation() {
     // 检查 AI 是否有即将获胜的机会
@@ -103,7 +228,7 @@ function evaluatePositionScore(col, row) {
     score += checkDirectionScore(col, row, 1, -1); // 对角线向左下
     score += checkDirectionScore(col, row, -1, 1); // 对角线向右上
     score += checkDirectionScore(col, row, -1, -1); // 对角线向左上
-
+    
     return score;
 }
 
