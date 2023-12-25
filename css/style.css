@@ -92,7 +92,31 @@ button {
     align-items: center;
     margin: auto;
 }
-
+/* 棋盘标注 */
+.cell::before,.cell::after {
+    font-size: 0.5em;
+    position: absolute;
+    color: var(--text-color);
+    opacity: 0.25;
+}
+/* 棋盘标注定位 */
+.cell::before {top: -2em;}
+.cell::after {left: -2em;}
+/* 棋盘标注内容 - 行 */
+.cell[columns="A"][rows="1"]::before { content: "A"; }
+.cell[columns="B"][rows="1"]::before { content: "B"; }
+.cell[columns="C"][rows="1"]::before { content: "C"; }
+.cell[columns="D"][rows="1"]::before { content: "D"; }
+.cell[columns="E"][rows="1"]::before { content: "E"; }
+.cell[columns="F"][rows="1"]::before { content: "F"; }
+.cell[columns="G"][rows="1"]::before { content: "G"; }
+/* 棋盘标注内容 - 列 */
+.cell[columns="A"][rows="1"]::after { content: "1"; }
+.cell[columns="A"][rows="2"]::after { content: "2"; }
+.cell[columns="A"][rows="3"]::after { content: "3"; }
+.cell[columns="A"][rows="4"]::after { content: "4"; }
+.cell[columns="A"][rows="5"]::after { content: "5"; }
+.cell[columns="A"][rows="6"]::after { content: "6"; }
 /* 棋子 */
 .piece {
     width: 100%;

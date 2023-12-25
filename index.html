@@ -43,19 +43,23 @@
     <!-- 引入css -->
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/root.css" />
+    <!-- 引入游戏图标 -->
     <script src="js/icons.js"></script>
 </head>
 
 <body>
+    <!-- 标题 -->
     <div id="title">
         <h1>Bingo</h1>
         <p>宾果棋 / 四子棋 / 下落棋</p>
     </div>
+    <!-- 游戏棋盘 -->
     <div id="gameBoard"></div>
     <!-- 游戏设置 -->
     <div id="gamesSetup">
+        <!-- 重置按钮 -->
         <button class="resetGame" onclick="resetGame()">重新开始</button>
-        <!-- 插入一个开关 -->
+        <!-- AI 开关 -->
         <div class="ai">
             <p>开启机器人</p>
             <label class="switch">
@@ -67,6 +71,7 @@
     <!-- 胜利弹窗 -->
     <div id="victoryPopup" class="popup" style="display: none;">
         <div id="card">
+            <!-- 胜利方棋子装饰 -->
             <div id="victoryPieceL" class="card-piece">
                 <iconpark-icon name="Star"></iconpark-icon>
             </div>
@@ -76,13 +81,16 @@
             <div id="victoryPiece" class="card-piece">
                 <iconpark-icon name="Star"></iconpark-icon>
             </div>
+            <!-- 胜利提示文字 -->
             <h1>Bingo !!</h1>
             <div id="victoryMessage"></div>
+            <!-- 重置按钮 -->
             <button onclick="closeVictoryPopup(),resetGame()">重新开始</button>
         </div>
     </div>
-    <!-- 引入本地js -->
+    <!-- 引入游戏主程序 -->
     <script src="js/script.js"></script>
+    <!-- 引入机器人程序 -->
     <script src="js/bot.js"></script>
 </body>
 
