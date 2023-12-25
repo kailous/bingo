@@ -49,6 +49,9 @@ function findBestMove() {
 }
 
 function assessSituation() {
+    // 声明 currentStrategy 变量
+    let currentStrategy;
+
     // 检查 AI 是否有即将获胜的机会
     if (findOffensiveMove()) {
         return 'offensive';
@@ -58,6 +61,7 @@ function assessSituation() {
     if (findDefensiveMove()) {
         return 'defensive';
     }
+
     // Check if the opponent is playing aggressively
     if (isOpponentAggressive()) {
         currentStrategy = 'defensive'; // Switch to defensive strategy
@@ -66,10 +70,8 @@ function assessSituation() {
     }
 
     return currentStrategy;
-    // 如果没有明显的获胜机会，考虑中间游戏策略
-    return 'midgame';
-    
 }
+
 function isOpponentAggressive() {
     // Get the current player's class (either 'userA' or 'userB')
     const currentPlayerClass = currentPlayer === 'userA' ? 'userA' : 'userB';
@@ -112,34 +114,44 @@ function isOpponentAggressive() {
     return false;
 }
 
-// Define the number of input features based on your game's requirements
-const NUM_INPUT_FEATURES = 20; // Replace with the actual number of features
+// // Define the number of input features based on your game's requirements
+// const NUM_INPUT_FEATURES = 20; // Replace with the actual number of features
 
-// Define and compile a simple neural network model using TensorFlow.js
-const model = tf.sequential();
-model.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [NUM_INPUT_FEATURES] }));
-model.add(tf.layers.dense({ units: 32, activation: 'relu' }));
-model.add(tf.layers.dense({ units: columns, activation: 'softmax' }));
-model.compile({ loss: 'categoricalCrossentropy', optimizer: 'adam' });
+// // Define and compile a simple neural network model using TensorFlow.js
+// const model = tf.sequential();
+// model.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [NUM_INPUT_FEATURES] }));
+// model.add(tf.layers.dense({ units: 32, activation: 'relu' }));
+// model.add(tf.layers.dense({ units: columns, activation: 'softmax' }));
+// model.compile({ loss: 'categoricalCrossentropy', optimizer: 'adam' });
 
-// Train the model with your game data (prepare your dataset)
-async function trainModel(xTrain, yTrain) {
-    const history = await model.fit(xTrain, yTrain, { epochs: 100 });
-}
+// // Train the model with your game data (prepare your dataset)
+// async function trainModel(xTrain, yTrain) {
+//     console.log('Training model...');
 
-// Use the trained model to make predictions for game moves
-function makeAIDecisionUsingModel(gameState) {
-    // Preprocess the gameState to prepare input data
-    const inputData = preprocess(gameState);
+//     const history = await model.fit(xTrain, yTrain, { epochs: 100 });
 
-    // Make predictions using the model
-    const predictions = model.predict(inputData);
+//     console.log('Training complete.');
+//     console.log(history); // 输出训练历史数据，可以查看损失等信息
+// }
 
-    // Choose the column with the highest predicted probability
-    const bestMoveIndex = predictions.argMax(axis = 1).dataSync()[0];
 
-    return getColumnCells(bestMoveIndex)[0];
-}
+// // Use the trained model to make predictions for game moves
+// function makeAIDecisionUsingModel(gameState) {
+//     // Preprocess the gameState to prepare input data
+//     const inputData = preprocess(gameState);
+
+//     // Make predictions using the model
+//     const predictions = model.predict(inputData);
+
+//     // Choose the column with the highest predicted probability
+//     const bestMoveIndex = predictions.argMax({ axis: 1 }).dataSync()[0];
+
+//     console.log('Model predictions:', predictions.arraySync()); // 输出模型的预测结果
+//     console.log('Best move index:', bestMoveIndex); // 输出选择的最佳移动索引
+
+//     return getColumnCells(bestMoveIndex)[0];
+// }
+
 
 
 
