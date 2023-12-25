@@ -14,14 +14,21 @@ var playerNames = {
 
 
 function createBoard() {
+    var columnLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G']; // 列号从 A 到 G
     for (var i = 0; i < columns * rows; i++) {
         var cell = document.createElement('div');
         cell.classList.add('cell');
+        
+        // 设置单元格的列号
+        var col = columnLabels[i % columns];
+        cell.setAttribute('columns', col);
+
         cell.addEventListener('click', dropPiece);
         board.appendChild(cell);
         assignBingoId(board); // 给棋盘单元格分配binggo-id
     }
 }
+
 
 function dropPiece() {
     if (gameEnded || isDropping) {
@@ -43,6 +50,10 @@ function dropPiece() {
             icon.setAttribute('stroke-width', '10');
             icon.setAttribute('name', 'Star');
             piece.appendChild(icon);
+
+            // 更新单元格的行号
+            var row = i + 1;
+            columnCells[i].setAttribute('rows', row);
 
             columnCells[i].appendChild(piece);
 
@@ -68,7 +79,11 @@ function dropPiece() {
     console.clear();
     printBoard();
     // 在控制台 输出当前落子位置
-    console.log(playerNames[currentPlayer] + '落子：' + this.getAttribute('columns') + ' - ' + this.getAttribute('rows'));
+    // 更新单元格的行号
+var row = i + 1;
+columnCells[i].setAttribute('rows', row);
+
+    console.log(playerNames[currentPlayer] + '落子：' + columnCells[i].getAttribute('columns') + ' - ' + columnCells[i].getAttribute('rows'));
 }
 
 
