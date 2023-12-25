@@ -1,3 +1,4 @@
+
 // 监视开关按钮的状态，控制 AI 对手的开启和关闭
 document.getElementById('togBtn').addEventListener('change', function () {
     if (this.checked) {
@@ -48,6 +49,9 @@ function findBestMove() {
 }
 
 function assessSituation() {
+    // 声明 currentStrategy 变量
+    let currentStrategy;
+
     // 检查 AI 是否有即将获胜的机会
     if (findOffensiveMove()) {
         return 'offensive';
@@ -58,35 +62,81 @@ function assessSituation() {
         return 'defensive';
     }
 
-    // 如果没有明显的获胜机会，考虑中间游戏策略
-    return 'midgame';
+    // Check if the opponent is playing aggressively
+    if (isOpponentAggressive()) {
+        currentStrategy = 'defensive'; // Switch to defensive strategy
+    } else {
+        currentStrategy = 'midgame'; // Default to midgame strategy
+    }
+
+    return currentStrategy;
 }
 
+function isOpponentAggressive() {
+    // Get the current player's class (either 'userA' or 'userB')
+    const currentPlayerClass = currentPlayer === 'userA' ? 'userA' : 'userB';
 
-function midGameStrategy() {
-    let bestMove = null;
-    let maxScore = 0;
+    // Define a threshold for the number of consecutive moves
+    const consecutiveMovesThreshold = 3;
 
+    // Initialize variables to count consecutive moves and empty cells
+    let consecutiveMoves = 0;
+    let emptyCells = 0;
+
+    // Loop through the game board to analyze opponent's moves
     for (let col = 0; col < columns; col++) {
         let columnCells = getColumnCells(col);
         for (let row = columnCells.length - 1; row >= 0; row--) {
-            if (!columnCells[row].hasChildNodes()) {
-                // 评估每个可用位置的得分
-                let score = evaluatePositionScore(col, row);
+            const cell = columnCells[row];
 
-                // 选择得分最高的移动
-                if (score > maxScore) {
-                    maxScore = score;
-                    bestMove = columnCells[row];
-                }
+            // Check if the cell belongs to the opponent and is not empty
+            if (cell.firstChild && cell.firstChild.classList.contains(currentPlayerClass)) {
+                consecutiveMoves++;
+            } else {
+                // Reset consecutive moves count if an empty cell is encountered
+                consecutiveMoves = 0;
+                emptyCells++;
+            }
 
-                break; // 只考虑每列的最低可用位置
+            // Check if the opponent has made consecutive moves exceeding the threshold
+            if (consecutiveMoves >= consecutiveMovesThreshold) {
+                return true; // Opponent is considered aggressive
             }
         }
     }
 
-    return bestMove;
+    // If there are too few empty cells, opponent is considered aggressive
+    if (emptyCells <= columns) {
+        return true;
+    }
+
+    // If none of the above conditions are met, opponent is not aggressive
+    return false;
 }
+
+function midGameStrategy() {
+    let validMoves = [];
+    
+    // Collect all valid moves
+    for (let col = 0; col < columns; col++) {
+        let columnCells = getColumnCells(col);
+        for (let row = columnCells.length - 1; row >= 0; row--) {
+            if (!columnCells[row].hasChildNodes()) {
+                validMoves.push(columnCells[row]);
+                break; // Only consider the lowest available position in each column
+            }
+        }
+    }
+
+    // Randomly select a valid move
+    if (validMoves.length > 0) {
+        let randomIndex = Math.floor(Math.random() * validMoves.length);
+        return validMoves[randomIndex];
+    }
+
+    return null;
+}
+
 
 function evaluatePositionScore(col, row) {
     let score = 0;

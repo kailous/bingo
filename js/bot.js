@@ -114,47 +114,6 @@ function isOpponentAggressive() {
     return false;
 }
 
-// // Define the number of input features based on your game's requirements
-// const NUM_INPUT_FEATURES = 20; // Replace with the actual number of features
-
-// // Define and compile a simple neural network model using TensorFlow.js
-// const model = tf.sequential();
-// model.add(tf.layers.dense({ units: 64, activation: 'relu', inputShape: [NUM_INPUT_FEATURES] }));
-// model.add(tf.layers.dense({ units: 32, activation: 'relu' }));
-// model.add(tf.layers.dense({ units: columns, activation: 'softmax' }));
-// model.compile({ loss: 'categoricalCrossentropy', optimizer: 'adam' });
-
-// // Train the model with your game data (prepare your dataset)
-// async function trainModel(xTrain, yTrain) {
-//     console.log('Training model...');
-
-//     const history = await model.fit(xTrain, yTrain, { epochs: 100 });
-
-//     console.log('Training complete.');
-//     console.log(history); // 输出训练历史数据，可以查看损失等信息
-// }
-
-
-// // Use the trained model to make predictions for game moves
-// function makeAIDecisionUsingModel(gameState) {
-//     // Preprocess the gameState to prepare input data
-//     const inputData = preprocess(gameState);
-
-//     // Make predictions using the model
-//     const predictions = model.predict(inputData);
-
-//     // Choose the column with the highest predicted probability
-//     const bestMoveIndex = predictions.argMax({ axis: 1 }).dataSync()[0];
-
-//     console.log('Model predictions:', predictions.arraySync()); // 输出模型的预测结果
-//     console.log('Best move index:', bestMoveIndex); // 输出选择的最佳移动索引
-
-//     return getColumnCells(bestMoveIndex)[0];
-// }
-
-
-
-
 function midGameStrategy() {
     let validMoves = [];
     
