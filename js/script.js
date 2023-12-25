@@ -145,7 +145,7 @@ function showVictoryPopup(player) {
 }
 // 保存游戏记录
 function saveConsoleOutputToLocal() {
-    const consoleOutput = JSON.parse(localStorage.getItem('GameLog')) || [];
+    const GameLog = JSON.parse(localStorage.getItem('GameLog')) || [];
     const originalLog = console.log;
 
     // 重定向控制台输出到数组
@@ -155,7 +155,7 @@ function saveConsoleOutputToLocal() {
             timestamp: new Date().toISOString(),
             message: logs.join(' '), // 将多个参数合并成一个字符串
         };
-        consoleOutput.push(logEntry);
+        GameLog.push(logEntry);
         originalLog.apply(console, arguments);
     };
     // 重置控制台输出
@@ -163,7 +163,7 @@ function saveConsoleOutputToLocal() {
     printBoard();
 
     // 将控制台输出保存到localStorage
-    localStorage.setItem('consoleOutput', JSON.stringify(consoleOutput));
+    localStorage.setItem('GameLog', JSON.stringify(GameLog));
 }
 
 
