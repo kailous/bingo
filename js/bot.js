@@ -89,20 +89,56 @@ function midGameStrategy() {
 }
 
 function evaluatePositionScore(col, row) {
-    // 根据特定的位置评估得分
-    // 这里的逻辑可以根据游戏的实际规则来调整
-    // 例如，考虑到建立获胜机会或阻断对手获胜路径的潜力
-    // 返回一个数值表示该位置的得分
     let score = 0;
 
-    // 示例：增加得分如果位置旁边有相同颜色的棋子
-    // 这里的代码应根据您的具体游戏规则进行调整
+    // 检查水平方向的潜在得分
+    score += checkDirectionScore(col, row, 0, 1); // 水平向右
+    score += checkDirectionScore(col, row, 0, -1); // 水平向左
 
-    // 检查水平、垂直和对角线方向上的潜在得分
-    // ...
+    // 检查垂直方向的潜在得分
+    score += checkDirectionScore(col, row, 1, 0); // 垂直向下
+
+    // 检查对角线方向的潜在得分
+    score += checkDirectionScore(col, row, 1, 1); // 对角线向右下
+    score += checkDirectionScore(col, row, 1, -1); // 对角线向左下
+    score += checkDirectionScore(col, row, -1, 1); // 对角线向右上
+    score += checkDirectionScore(col, row, -1, -1); // 对角线向左上
 
     return score;
 }
+
+function checkDirectionScore(col, row, deltaRow, deltaCol) {
+    let score = 0;
+    let opponent = currentPlayer === 'userA' ? 'userB' : 'userA';
+
+    // 检查四个方向上相邻的3个位置
+    for (let i = 1; i <= 3; i++) {
+        let newRow = row + i * deltaRow;
+        let newCol = col + i * deltaCol;
+
+        // 检查边界
+        if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= columns) {
+            break;
+        }
+
+        let cellIndex = newRow * columns + newCol;
+        let cell = board.children[cellIndex];
+
+        if (cell.hasChildNodes()) {
+            if (cell.firstChild.classList.contains(currentPlayer)) {
+                score += 10; // 增加得分如果相邻位置有AI的棋子
+            } else if (cell.firstChild.classList.contains(opponent)) {
+                score += 5; // 增加得分如果相邻位置有对手的棋子
+                break; // 遇到对手的棋子则停止在该方向上的评分
+            }
+        } else {
+            score += 1; // 为空位置也增加一些得分
+        }
+    }
+
+    return score;
+}
+
 
 
 
