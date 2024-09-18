@@ -1,4 +1,3 @@
-
 // 监视开关按钮的状态，控制 AI 对手的开启和关闭
 document.getElementById('togBtn').addEventListener('change', function () {
     if (this.checked) {
@@ -11,261 +10,293 @@ document.getElementById('togBtn').addEventListener('change', function () {
 // 启用 AI 对手
 function enableAI() {
     console.log('AI 对手开启');
-    var board = document.getElementById('gameBoard');
-    board.addEventListener('click', handleClick);
+    var boardElement = document.getElementById('gameBoard');
+    boardElement.addEventListener('click', handleClick);
+    initializeBoardMatrix(); // 初始化棋盘矩阵
 }
 
 // 关闭 AI 对手
 function disableAI() {
     console.log('AI 对手关闭');
-    var board = document.getElementById('gameBoard');
-    board.removeEventListener('click', handleClick);
+    var boardElement = document.getElementById('gameBoard');
+    boardElement.removeEventListener('click', handleClick);
 }
 
-// AI 决策逻辑
-function makeAIDecision() {
-    let bestMove = findBestMove();
-    if (bestMove) {
-        bestMove.click();
-    }
-}
+// 棋盘参数
+const rows = 6;
+const columns = 7;
+let boardMatrix = []; // 用于存储棋盘状态的二维数组
+let currentPlayer = 'userA';
+let gameEnded = false;
 
-// 寻找最佳移动
-function findBestMove() {
-    // 评估局势，根据局势调整策略
-    let situation = assessSituation();
-
-    // 根据局势采取不同的行动
-    if (situation === 'defensive') {
-        let move = findDefensiveMove();
-        if (move) return move;
-    } else if (situation === 'offensive') {
-        let move = findOffensiveMove();
-        if (move) return move;
-    }
-
-    // 如果没有明显的策略，则采取中间游戏策略或随机移动
-    return midGameStrategy() || randomMove();
-}
-
-function assessSituation() {
-    // 声明 currentStrategy 变量
-    let currentStrategy;
-
-    // 检查 AI 是否有即将获胜的机会
-    if (findOffensiveMove()) {
-        return 'offensive';
-    }
-
-    // 检查对手是否有即将获胜的机会
-    if (findDefensiveMove()) {
-        return 'defensive';
-    }
-
-    // Check if the opponent is playing aggressively
-    if (isOpponentAggressive()) {
-        currentStrategy = 'defensive'; // Switch to defensive strategy
-    } else {
-        currentStrategy = 'midgame'; // Default to midgame strategy
-    }
-
-    return currentStrategy;
-}
-
-function isOpponentAggressive() {
-    // Get the current player's class (either 'userA' or 'userB')
-    const currentPlayerClass = currentPlayer === 'userA' ? 'userA' : 'userB';
-
-    // Define a threshold for the number of consecutive moves
-    const consecutiveMovesThreshold = 3;
-
-    // Initialize variables to count consecutive moves and empty cells
-    let consecutiveMoves = 0;
-    let emptyCells = 0;
-
-    // Loop through the game board to analyze opponent's moves
-    for (let col = 0; col < columns; col++) {
-        let columnCells = getColumnCells(col);
-        for (let row = columnCells.length - 1; row >= 0; row--) {
-            const cell = columnCells[row];
-
-            // Check if the cell belongs to the opponent and is not empty
-            if (cell.firstChild && cell.firstChild.classList.contains(currentPlayerClass)) {
-                consecutiveMoves++;
-            } else {
-                // Reset consecutive moves count if an empty cell is encountered
-                consecutiveMoves = 0;
-                emptyCells++;
-            }
-
-            // Check if the opponent has made consecutive moves exceeding the threshold
-            if (consecutiveMoves >= consecutiveMovesThreshold) {
-                return true; // Opponent is considered aggressive
-            }
-        }
-    }
-
-    // If there are too few empty cells, opponent is considered aggressive
-    if (emptyCells <= columns) {
-        return true;
-    }
-
-    // If none of the above conditions are met, opponent is not aggressive
-    return false;
-}
-
-function midGameStrategy() {
-    let validMoves = [];
-    
-    // Collect all valid moves
-    for (let col = 0; col < columns; col++) {
-        let columnCells = getColumnCells(col);
-        for (let row = columnCells.length - 1; row >= 0; row--) {
-            if (!columnCells[row].hasChildNodes()) {
-                validMoves.push(columnCells[row]);
-                break; // Only consider the lowest available position in each column
-            }
-        }
-    }
-
-    // Randomly select a valid move
-    if (validMoves.length > 0) {
-        let randomIndex = Math.floor(Math.random() * validMoves.length);
-        return validMoves[randomIndex];
-    }
-
-    return null;
-}
-
-
-function evaluatePositionScore(col, row) {
-    let score = 0;
-
-    // 检查水平方向的潜在得分
-    score += checkDirectionScore(col, row, 0, 1); // 水平向右
-    score += checkDirectionScore(col, row, 0, -1); // 水平向左
-
-    // 检查垂直方向的潜在得分
-    score += checkDirectionScore(col, row, 1, 0); // 垂直向下
-
-    // 检查对角线方向的潜在得分
-    score += checkDirectionScore(col, row, 1, 1); // 对角线向右下
-    score += checkDirectionScore(col, row, 1, -1); // 对角线向左下
-    score += checkDirectionScore(col, row, -1, 1); // 对角线向右上
-    score += checkDirectionScore(col, row, -1, -1); // 对角线向左上
-
-    return score;
-}
-
-function checkDirectionScore(col, row, deltaRow, deltaCol) {
-    let score = 0;
-    let opponent = currentPlayer === 'userA' ? 'userB' : 'userA';
-
-    // 检查四个方向上相邻的3个位置
-    for (let i = 1; i <= 3; i++) {
-        let newRow = row + i * deltaRow;
-        let newCol = col + i * deltaCol;
-
-        // 检查边界
-        if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= columns) {
-            break;
-        }
-
-        let cellIndex = newRow * columns + newCol;
-        let cell = board.children[cellIndex];
-
-        if (cell.hasChildNodes()) {
-            if (cell.firstChild.classList.contains(currentPlayer)) {
-                score += 10; // 增加得分如果相邻位置有AI的棋子
-            } else if (cell.firstChild.classList.contains(opponent)) {
-                score += 5; // 增加得分如果相邻位置有对手的棋子
-                break; // 遇到对手的棋子则停止在该方向上的评分
-            }
-        } else {
-            score += 1; // 为空位置也增加一些得分
-        }
-    }
-
-    return score;
-}
-
-
-
-
-// 创建模拟棋子
-function createMockPiece(player) {
-    var mockPiece = document.createElement('div');
-    mockPiece.classList.add('piece', player);
-    return mockPiece;
+// 初始化棋盘矩阵
+function initializeBoardMatrix() {
+    boardMatrix = Array(rows).fill(null).map(() => Array(columns).fill(null));
 }
 
 // 将点击事件处理封装成独立的函数
 function handleClick(event) {
     if (currentPlayer === 'userA' && !gameEnded) {
-        setTimeout(function () {
-            if (currentPlayer === 'userB') {
-                makeAIDecision();
+        let col = parseInt(event.target.getAttribute('data-col'));
+        if (dropPiece(col, 'userA')) {
+            if (checkWin(boardMatrix, 'userA')) {
+                gameEnded = true;
+                alert('玩家A胜利！');
+                return;
             }
-        }, 1000);
+            currentPlayer = 'userB';
+            makeAIDecision();
+        }
     }
 }
-// 防御性移动逻辑
-function findDefensiveMove() {
+
+// 用户或AI落子
+function dropPiece(col, player) {
+    for (let row = rows - 1; row >= 0; row--) {
+        if (boardMatrix[row][col] === null) {
+            boardMatrix[row][col] = player;
+            updateUI(row, col, player);
+            return true;
+        }
+    }
+    return false; // 列已满
+}
+
+// 更新UI
+function updateUI(row, col, player) {
+    let boardElement = document.getElementById('gameBoard');
+    let cell = boardElement.children[row * columns + col];
+    let piece = document.createElement('div');
+    piece.classList.add('piece', player);
+    cell.appendChild(piece);
+}
+
+// AI 决策逻辑
+function makeAIDecision() {
+    let bestMove = findBestMove();
+    if (bestMove !== null) {
+        dropPiece(bestMove, 'userB');
+        if (checkWin(boardMatrix, 'userB')) {
+            gameEnded = true;
+            alert('AI胜利！');
+            return;
+        }
+        currentPlayer = 'userA';
+    } else {
+        gameEnded = true;
+        alert('平局！');
+    }
+}
+
+// 寻找最佳移动
+function findBestMove() {
+    let bestScore = -Infinity;
+    let bestCol = null;
+    let depth = 6; // 增加搜索深度
     for (let col = 0; col < columns; col++) {
-        let columnCells = getColumnCells(col);
-        for (let row = columnCells.length - 1; row >= 0; row--) {
-            if (!columnCells[row].hasChildNodes()) {
-                // 模拟放置对手棋子
-                let mockPiece = createMockPiece('userA');
-                columnCells[row].appendChild(mockPiece);
-
-                // 检查对手是否能赢
-                if (checkWin('userA')) {
-                    columnCells[row].removeChild(mockPiece);
-                    return columnCells[row];
-                }
-
-                columnCells[row].removeChild(mockPiece);
-                break;
+        let row = getAvailableRow(col);
+        if (row !== null) {
+            boardMatrix[row][col] = 'userB';
+            let score = minimax(boardMatrix, depth - 1, -Infinity, Infinity, false);
+            boardMatrix[row][col] = null;
+            if (score > bestScore) {
+                bestScore = score;
+                bestCol = col;
             }
+        }
+    }
+    return bestCol;
+}
+
+// 获取可用的行
+function getAvailableRow(col) {
+    for (let row = rows - 1; row >= 0; row--) {
+        if (boardMatrix[row][col] === null) {
+            return row;
         }
     }
     return null;
 }
-// 进攻性移动逻辑
-function findOffensiveMove() {
-    for (let col = 0; col < columns; col++) {
-        let columnCells = getColumnCells(col);
-        for (let row = columnCells.length - 1; row >= 0; row--) {
-            if (!columnCells[row].hasChildNodes()) {
-                // 模拟放置自己的棋子
-                let mockPiece = createMockPiece('userB');
-                columnCells[row].appendChild(mockPiece);
 
-                // 检查自己是否能赢
-                if (checkWin('userB')) {
-                    columnCells[row].removeChild(mockPiece);
-                    return columnCells[row];
-                }
+// 迷你极大值算法 with α-β 剪枝
+function minimax(board, depth, alpha, beta, isMaximizing) {
+    if (checkWin(board, 'userB')) return 1000000;
+    if (checkWin(board, 'userA')) return -1000000;
+    if (isBoardFull(board) || depth === 0) return evaluateBoard(board);
 
-                columnCells[row].removeChild(mockPiece);
-                break;
+    if (isMaximizing) {
+        let maxEval = -Infinity;
+        for (let col = 0; col < columns; col++) {
+            let row = getAvailableRow(col);
+            if (row !== null) {
+                board[row][col] = 'userB';
+                let eval = minimax(board, depth - 1, alpha, beta, false);
+                board[row][col] = null;
+                maxEval = Math.max(maxEval, eval);
+                alpha = Math.max(alpha, eval);
+                if (beta <= alpha) break;
             }
         }
+        return maxEval;
+    } else {
+        let minEval = Infinity;
+        for (let col = 0; col < columns; col++) {
+            let row = getAvailableRow(col);
+            if (row !== null) {
+                board[row][col] = 'userA';
+                let eval = minimax(board, depth - 1, alpha, beta, true);
+                board[row][col] = null;
+                minEval = Math.min(minEval, eval);
+                beta = Math.min(beta, eval);
+                if (beta <= alpha) break;
+            }
+        }
+        return minEval;
     }
-    return null;
 }
-// 随机移动
-function randomMove() {
-    let validCells = [];
+
+// 检查棋盘是否已满
+function isBoardFull(board) {
     for (let col = 0; col < columns; col++) {
-        let columnCells = getColumnCells(col);
-        for (let row = columnCells.length - 1; row >= 0; row--) {
-            if (!columnCells[row].hasChildNodes()) {
-                validCells.push(columnCells[row]);
-                break;
+        if (board[0][col] === null) return false;
+    }
+    return true;
+}
+
+// 评估棋盘
+function evaluateBoard(board) {
+    let score = 0;
+
+    // 水平
+    for (let row = 0; row < rows; row++) {
+        let rowArray = board[row];
+        for (let col = 0; col < columns - 3; col++) {
+            let window = rowArray.slice(col, col + 4);
+            score += evaluateWindow(window, 'userB');
+        }
+    }
+
+    // 垂直
+    for (let col = 0; col < columns; col++) {
+        let colArray = [];
+        for (let row = 0; row < rows; row++) {
+            colArray.push(board[row][col]);
+        }
+        for (let row = 0; row < rows - 3; row++) {
+            let window = colArray.slice(row, row + 4);
+            score += evaluateWindow(window, 'userB');
+        }
+    }
+
+    // 正对角线
+    for (let row = 0; row < rows - 3; row++) {
+        for (let col = 0; col < columns - 3; col++) {
+            let window = [
+                board[row][col],
+                board[row + 1][col + 1],
+                board[row + 2][col + 2],
+                board[row + 3][col + 3],
+            ];
+            score += evaluateWindow(window, 'userB');
+        }
+    }
+
+    // 反对角线
+    for (let row = 0; row < rows - 3; row++) {
+        for (let col = 3; col < columns; col++) {
+            let window = [
+                board[row][col],
+                board[row + 1][col - 1],
+                board[row + 2][col - 2],
+                board[row + 3][col - 3],
+            ];
+            score += evaluateWindow(window, 'userB');
+        }
+    }
+
+    return score;
+}
+
+// 评估窗口
+function evaluateWindow(window, player) {
+    let score = 0;
+    let opponent = player === 'userB' ? 'userA' : 'userB';
+    let playerCount = window.filter(cell => cell === player).length;
+    let emptyCount = window.filter(cell => cell === null).length;
+    let opponentCount = window.filter(cell => cell === opponent).length;
+
+    if (playerCount === 4) {
+        score += 100;
+    } else if (playerCount === 3 && emptyCount === 1) {
+        score += 10;
+    } else if (playerCount === 2 && emptyCount === 2) {
+        score += 5;
+    }
+
+    if (opponentCount === 3 && emptyCount === 1) {
+        score -= 80;
+    }
+
+    return score;
+}
+
+// 检查胜利
+function checkWin(board, player) {
+    // 水平
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < columns - 3; col++) {
+            if (
+                board[row][col] === player &&
+                board[row][col + 1] === player &&
+                board[row][col + 2] === player &&
+                board[row][col + 3] === player
+            ) {
+                return true;
             }
         }
     }
-    return validCells[Math.floor(Math.random() * validCells.length)];
+
+    // 垂直
+    for (let col = 0; col < columns; col++) {
+        for (let row = 0; row < rows - 3; row++) {
+            if (
+                board[row][col] === player &&
+                board[row + 1][col] === player &&
+                board[row + 2][col] === player &&
+                board[row + 3][col] === player
+            ) {
+                return true;
+            }
+        }
+    }
+
+    // 正对角线
+    for (let row = 0; row < rows - 3; row++) {
+        for (let col = 0; col < columns - 3; col++) {
+            if (
+                board[row][col] === player &&
+                board[row + 1][col + 1] === player &&
+                board[row + 2][col + 2] === player &&
+                board[row + 3][col + 3] === player
+            ) {
+                return true;
+            }
+        }
+    }
+
+    // 反对角线
+    for (let row = 0; row < rows - 3; row++) {
+        for (let col = 3; col < columns; col++) {
+            if (
+                board[row][col] === player &&
+                board[row + 1][col - 1] === player &&
+                board[row + 2][col - 2] === player &&
+                board[row + 3][col - 3] === player
+            ) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
