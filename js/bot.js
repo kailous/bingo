@@ -1,4 +1,8 @@
 
+const BOT_VERSION = '1.1.0';
+
+console.log(`AI 对手脚本加载，版本 ${BOT_VERSION}`);
+
 // 监视开关按钮的状态，控制 AI 对手的开启和关闭
 document.getElementById('togBtn').addEventListener('change', function () {
     if (this.checked) {
@@ -13,14 +17,14 @@ const HUMAN_PLAYER = 'userA';
 
 // 启用 AI 对手
 function enableAI() {
-    console.log('AI 对手开启');
+    console.log(`AI 对手开启，版本 ${BOT_VERSION}`);
     var board = document.getElementById('gameBoard');
     board.addEventListener('click', handleClick);
 }
 
 // 关闭 AI 对手
 function disableAI() {
-    console.log('AI 对手关闭');
+    console.log(`AI 对手关闭，版本 ${BOT_VERSION}`);
     var board = document.getElementById('gameBoard');
     board.removeEventListener('click', handleClick);
 }
