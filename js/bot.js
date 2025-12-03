@@ -1,5 +1,5 @@
 
-const BOT_VERSION = '1.1.0';
+const BOT_VERSION = '1.2.0';
 
 console.log(`AI 对手脚本加载，版本 ${BOT_VERSION}`);
 
@@ -47,85 +47,133 @@ function findBestMove() {
     const blockingMove = findDefensiveMove();
     if (blockingMove) return blockingMove;
 
-    // 3. 评估所有可行落子，结合位置评分和策略判断
+    // 3. 使用极小化极大搜索寻找更安全的落子
     const candidateMoves = collectValidMoves();
     if (candidateMoves.length === 0) return null;
 
-    const situation = assessSituation();
-    const scoredMoves = candidateMoves.map((cell) => {
-        const evaluation = evaluateMove(cell, situation);
-        return {
-            cell,
-            score: evaluation.score,
-            opponentThreats: evaluation.opponentThreats
-        };
+    let bestScore = -Infinity;
+    let bestMoves = [];
+
+    candidateMoves.forEach((cell) => {
+        const score = simulateMove(cell, AI_PLAYER, () => minimax(2, false, -Infinity, Infinity)).score;
+        if (score > bestScore) {
+            bestScore = score;
+            bestMoves = [cell];
+        } else if (score === bestScore) {
+            bestMoves.push(cell);
+        }
     });
 
-    // 先筛选出不会给对手留下立刻获胜机会的落子
-    const minThreats = Math.min(...scoredMoves.map(move => move.opponentThreats));
-    const safestMoves = scoredMoves.filter(move => move.opponentThreats === minThreats);
-
-    // 在最安全的候选中按评分排序
-    safestMoves.sort((a, b) => b.score - a.score);
-    const bestScore = safestMoves[0].score;
-
-    // 在最佳分数的候选中随机挑选，避免过于机械
-    const topChoices = safestMoves.filter(move => move.score === bestScore);
-    return topChoices[Math.floor(Math.random() * topChoices.length)].cell;
+    // 4. 在最佳分数里随机挑选，避免单一路径
+    return bestMoves[Math.floor(Math.random() * bestMoves.length)];
 }
 
-function assessSituation() {
-    if (countImmediateThreats(AI_PLAYER) > 0) {
-        return 'offensive';
-    }
-
-    if (isOpponentAggressive()) {
-        return 'defensive';
-    }
-
-    return 'midgame';
+function simulateMove(cell, player, callback) {
+    const mockPiece = createMockPiece(player);
+    cell.appendChild(mockPiece);
+    const result = callback();
+    cell.removeChild(mockPiece);
+    return result;
 }
 
-function isOpponentAggressive() {
-    // 始终以 AI 的对手为分析对象
-    const opponentClass = HUMAN_PLAYER;
+function evaluateBoardState() {
+    const directions = [
+        { dr: 0, dc: 1 },   // 水平
+        { dr: 1, dc: 0 },   // 垂直
+        { dr: 1, dc: 1 },   // 对角线 ↘
+        { dr: 1, dc: -1 }   // 对角线 ↙
+    ];
 
-    // Define a threshold for the number of consecutive moves
-    const consecutiveMovesThreshold = 3;
+    let aiScore = 0;
+    let humanScore = 0;
 
-    // Initialize variables to count consecutive moves and empty cells
-    let consecutiveMoves = 0;
-    let emptyCells = 0;
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < columns; col++) {
+            directions.forEach(({ dr, dc }) => {
+                if (isSequenceInsideBoard(row, col, dr, dc)) {
+                    const { aiCount, humanCount } = evaluateSequence(row, col, dr, dc);
+                    if (aiCount > 0 && humanCount === 0) {
+                        aiScore += Math.pow(10, aiCount);
+                    } else if (humanCount > 0 && aiCount === 0) {
+                        humanScore += Math.pow(10, humanCount);
+                    }
+                }
+            });
+        }
+    }
 
-    // Loop through the game board to analyze opponent's moves
-    for (let col = 0; col < columns; col++) {
-        let columnCells = getColumnCells(col);
-        for (let row = columnCells.length - 1; row >= 0; row--) {
-            const cell = columnCells[row];
+    return aiScore - humanScore;
+}
 
-            // Check if the cell belongs to the opponent and is not empty
-            if (cell.firstChild && cell.firstChild.classList.contains(opponentClass)) {
-                consecutiveMoves++;
-            } else {
-                // Reset consecutive moves count if an empty cell is encountered
-                consecutiveMoves = 0;
-                emptyCells++;
-            }
+function isSequenceInsideBoard(startRow, startCol, dr, dc) {
+    const endRow = startRow + 3 * dr;
+    const endCol = startCol + 3 * dc;
+    return endRow >= 0 && endRow < rows && endCol >= 0 && endCol < columns;
+}
 
-            // Check if the opponent has made consecutive moves exceeding the threshold
-            if (consecutiveMoves >= consecutiveMovesThreshold) {
-                return true; // Opponent is considered aggressive
+function evaluateSequence(startRow, startCol, dr, dc) {
+    let aiCount = 0;
+    let humanCount = 0;
+
+    for (let i = 0; i < 4; i++) {
+        const row = startRow + i * dr;
+        const col = startCol + i * dc;
+        const cell = board.children[row * columns + col];
+        if (cell.hasChildNodes()) {
+            if (cell.firstChild.classList.contains(AI_PLAYER)) {
+                aiCount++;
+            } else if (cell.firstChild.classList.contains(HUMAN_PLAYER)) {
+                humanCount++;
             }
         }
     }
 
-    // If there are too few empty cells, opponent is considered aggressive
-    if (emptyCells <= columns) {
-        return true;
+    return { aiCount, humanCount };
+}
+
+function boardIsFull() {
+    return Array.from(board.children).every((cell) => cell.hasChildNodes());
+}
+
+function minimax(depth, maximizingPlayer, alpha, beta) {
+    if (checkWin(AI_PLAYER)) {
+        return { score: 10000 + depth };
+    }
+    if (checkWin(HUMAN_PLAYER)) {
+        return { score: -10000 - depth };
+    }
+    if (depth === 0 || boardIsFull()) {
+        return { score: evaluateBoardState() };
     }
 
-    // If none of the above conditions are met, opponent is not aggressive
-    return false;
+    const validMoves = collectValidMoves();
+    if (validMoves.length === 0) {
+        return { score: 0 };
+    }
+
+    if (maximizingPlayer) {
+        let maxEval = -Infinity;
+        for (const cell of validMoves) {
+            const evaluation = simulateMove(cell, AI_PLAYER, () => minimax(depth - 1, false, alpha, beta)).score;
+            maxEval = Math.max(maxEval, evaluation);
+            alpha = Math.max(alpha, evaluation);
+            if (beta <= alpha) {
+                break; // 剪枝
+            }
+        }
+        return { score: maxEval };
+    } else {
+        let minEval = Infinity;
+        for (const cell of validMoves) {
+            const evaluation = simulateMove(cell, HUMAN_PLAYER, () => minimax(depth - 1, true, alpha, beta)).score;
+            minEval = Math.min(minEval, evaluation);
+            beta = Math.min(beta, evaluation);
+            if (beta <= alpha) {
+                break; // 剪枝
+            }
+        }
+        return { score: minEval };
+    }
 }
 
 function collectValidMoves() {
@@ -143,121 +191,11 @@ function collectValidMoves() {
 
     return validMoves;
 }
-
-
-function evaluatePositionScore(col, row, player) {
-    let score = 0;
-
-    // 中心列更优，增加额外权重鼓励占领中心
-    const centerDistance = Math.abs(col - Math.floor(columns / 2));
-    score += (columns - centerDistance * 2);
-
-    // 检查水平方向的潜在得分
-    score += checkDirectionScore(col, row, 0, 1, player); // 水平向右
-    score += checkDirectionScore(col, row, 0, -1, player); // 水平向左
-
-    // 检查垂直方向的潜在得分
-    score += checkDirectionScore(col, row, 1, 0, player); // 垂直向下
-
-    // 检查对角线方向的潜在得分
-    score += checkDirectionScore(col, row, 1, 1, player); // 对角线向右下
-    score += checkDirectionScore(col, row, 1, -1, player); // 对角线向左下
-    score += checkDirectionScore(col, row, -1, 1, player); // 对角线向右上
-    score += checkDirectionScore(col, row, -1, -1, player); // 对角线向左上
-
-    return score;
-}
-
-function checkDirectionScore(col, row, deltaRow, deltaCol, player) {
-    let score = 0;
-    let opponent = player === 'userA' ? 'userB' : 'userA';
-
-    // 检查四个方向上相邻的3个位置
-    for (let i = 1; i <= 3; i++) {
-        let newRow = row + i * deltaRow;
-        let newCol = col + i * deltaCol;
-
-        // 检查边界
-        if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= columns) {
-            break;
-        }
-
-        let cellIndex = newRow * columns + newCol;
-        let cell = board.children[cellIndex];
-
-        if (cell.hasChildNodes()) {
-            if (cell.firstChild.classList.contains(player)) {
-                score += 10; // 增加得分如果相邻位置有AI的棋子
-            } else if (cell.firstChild.classList.contains(opponent)) {
-                score += 5; // 增加得分如果相邻位置有对手的棋子
-                break; // 遇到对手的棋子则停止在该方向上的评分
-            }
-        } else {
-            score += 1; // 为空位置也增加一些得分
-        }
-    }
-
-    return score;
-}
-
-
-
-
 // 创建模拟棋子
 function createMockPiece(player) {
     var mockPiece = document.createElement('div');
     mockPiece.classList.add('piece', player);
     return mockPiece;
-}
-
-function evaluateMove(cell, situation) {
-    const col = getColumnIndex(cell);
-    const columnCells = getColumnCells(col);
-    const row = columnCells.indexOf(cell);
-
-    // 根据当前策略调节权重
-    const strategyMultiplier = situation === 'defensive' ? 0.9 : 1.1;
-
-    // 模拟放置棋子评估潜在分数
-    const mockPiece = createMockPiece(AI_PLAYER);
-    cell.appendChild(mockPiece);
-    const baseScore = evaluatePositionScore(col, row, AI_PLAYER);
-
-    // 如果此落子能让下一步形成双威胁，给予额外奖励
-    const followUpScore = countImmediateThreats(AI_PLAYER) * 15;
-
-    // 避免送出对手下一回合的直接获胜机会
-    const opponentThreats = countImmediateThreats(HUMAN_PLAYER);
-
-    cell.removeChild(mockPiece);
-
-    const safetyPenalty = opponentThreats * 50;
-
-    return {
-        score: baseScore * strategyMultiplier + followUpScore - safetyPenalty,
-        opponentThreats
-    };
-}
-
-function countImmediateThreats(player) {
-    let threatCount = 0;
-
-    for (let col = 0; col < columns; col++) {
-        const columnCells = getColumnCells(col);
-        for (let row = columnCells.length - 1; row >= 0; row--) {
-            if (!columnCells[row].hasChildNodes()) {
-                const mockPiece = createMockPiece(player);
-                columnCells[row].appendChild(mockPiece);
-                if (checkWin(player)) {
-                    threatCount++;
-                }
-                columnCells[row].removeChild(mockPiece);
-                break;
-            }
-        }
-    }
-
-    return threatCount;
 }
 
 // 将点击事件处理封装成独立的函数
