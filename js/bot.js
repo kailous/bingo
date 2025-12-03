@@ -8,6 +8,9 @@ document.getElementById('togBtn').addEventListener('change', function () {
     }
 });
 
+const AI_PLAYER = 'userB';
+const HUMAN_PLAYER = 'userA';
+
 // 启用 AI 对手
 function enableAI() {
     console.log('AI 对手开启');
@@ -24,57 +27,55 @@ function disableAI() {
 
 // AI 决策逻辑
 function makeAIDecision() {
-    let bestMove = findBestMove();
-    if (bestMove) {
+    const bestMove = findBestMove();
+    if (bestMove && !gameEnded) {
         bestMove.click();
     }
 }
 
 // 寻找最佳移动
 function findBestMove() {
-    // 评估局势，根据局势调整策略
-    let situation = assessSituation();
+    // 1. 优先寻找直接获胜的落子
+    const winningMove = findOffensiveMove();
+    if (winningMove) return winningMove;
 
-    // 根据局势采取不同的行动
-    if (situation === 'defensive') {
-        let move = findDefensiveMove();
-        if (move) return move;
-    } else if (situation === 'offensive') {
-        let move = findOffensiveMove();
-        if (move) return move;
-    }
+    // 2. 其次阻挡对手的必胜点
+    const blockingMove = findDefensiveMove();
+    if (blockingMove) return blockingMove;
 
-    // 如果没有明显的策略，则采取中间游戏策略或随机移动
-    return midGameStrategy() || randomMove();
+    // 3. 评估所有可行落子，结合位置评分和策略判断
+    const candidateMoves = collectValidMoves();
+    if (candidateMoves.length === 0) return null;
+
+    const situation = assessSituation();
+    const scoredMoves = candidateMoves.map((cell) => ({
+        cell,
+        score: evaluateMove(cell, situation)
+    }));
+
+    scoredMoves.sort((a, b) => b.score - a.score);
+    const bestScore = scoredMoves[0].score;
+
+    // 在最佳分数的候选中随机挑选，避免过于机械
+    const topChoices = scoredMoves.filter(move => move.score === bestScore);
+    return topChoices[Math.floor(Math.random() * topChoices.length)].cell;
 }
 
 function assessSituation() {
-    // 声明 currentStrategy 变量
-    let currentStrategy;
-
-    // 检查 AI 是否有即将获胜的机会
-    if (findOffensiveMove()) {
+    if (countImmediateThreats(AI_PLAYER) > 0) {
         return 'offensive';
     }
 
-    // 检查对手是否有即将获胜的机会
-    if (findDefensiveMove()) {
+    if (isOpponentAggressive()) {
         return 'defensive';
     }
 
-    // Check if the opponent is playing aggressively
-    if (isOpponentAggressive()) {
-        currentStrategy = 'defensive'; // Switch to defensive strategy
-    } else {
-        currentStrategy = 'midgame'; // Default to midgame strategy
-    }
-
-    return currentStrategy;
+    return 'midgame';
 }
 
 function isOpponentAggressive() {
-    // Get the current player's class (either 'userA' or 'userB')
-    const currentPlayerClass = currentPlayer === 'userA' ? 'userA' : 'userB';
+    // 始终以 AI 的对手为分析对象
+    const opponentClass = HUMAN_PLAYER;
 
     // Define a threshold for the number of consecutive moves
     const consecutiveMovesThreshold = 3;
@@ -90,7 +91,7 @@ function isOpponentAggressive() {
             const cell = columnCells[row];
 
             // Check if the cell belongs to the opponent and is not empty
-            if (cell.firstChild && cell.firstChild.classList.contains(currentPlayerClass)) {
+            if (cell.firstChild && cell.firstChild.classList.contains(opponentClass)) {
                 consecutiveMoves++;
             } else {
                 // Reset consecutive moves count if an empty cell is encountered
@@ -114,52 +115,49 @@ function isOpponentAggressive() {
     return false;
 }
 
-function midGameStrategy() {
-    let validMoves = [];
-    
-    // Collect all valid moves
+function collectValidMoves() {
+    const validMoves = [];
+
     for (let col = 0; col < columns; col++) {
         let columnCells = getColumnCells(col);
         for (let row = columnCells.length - 1; row >= 0; row--) {
             if (!columnCells[row].hasChildNodes()) {
                 validMoves.push(columnCells[row]);
-                break; // Only consider the lowest available position in each column
+                break; // 只考虑当前列最底部的空位
             }
         }
     }
 
-    // Randomly select a valid move
-    if (validMoves.length > 0) {
-        let randomIndex = Math.floor(Math.random() * validMoves.length);
-        return validMoves[randomIndex];
-    }
-
-    return null;
+    return validMoves;
 }
 
 
-function evaluatePositionScore(col, row) {
+function evaluatePositionScore(col, row, player) {
     let score = 0;
 
+    // 中心列更优，增加额外权重鼓励占领中心
+    const centerDistance = Math.abs(col - Math.floor(columns / 2));
+    score += (columns - centerDistance * 2);
+
     // 检查水平方向的潜在得分
-    score += checkDirectionScore(col, row, 0, 1); // 水平向右
-    score += checkDirectionScore(col, row, 0, -1); // 水平向左
+    score += checkDirectionScore(col, row, 0, 1, player); // 水平向右
+    score += checkDirectionScore(col, row, 0, -1, player); // 水平向左
 
     // 检查垂直方向的潜在得分
-    score += checkDirectionScore(col, row, 1, 0); // 垂直向下
+    score += checkDirectionScore(col, row, 1, 0, player); // 垂直向下
 
     // 检查对角线方向的潜在得分
-    score += checkDirectionScore(col, row, 1, 1); // 对角线向右下
-    score += checkDirectionScore(col, row, 1, -1); // 对角线向左下
-    score += checkDirectionScore(col, row, -1, 1); // 对角线向右上
-    score += checkDirectionScore(col, row, -1, -1); // 对角线向左上
+    score += checkDirectionScore(col, row, 1, 1, player); // 对角线向右下
+    score += checkDirectionScore(col, row, 1, -1, player); // 对角线向左下
+    score += checkDirectionScore(col, row, -1, 1, player); // 对角线向右上
+    score += checkDirectionScore(col, row, -1, -1, player); // 对角线向左上
 
     return score;
 }
 
-function checkDirectionScore(col, row, deltaRow, deltaCol) {
+function checkDirectionScore(col, row, deltaRow, deltaCol, player) {
     let score = 0;
-    let opponent = currentPlayer === 'userA' ? 'userB' : 'userA';
+    let opponent = player === 'userA' ? 'userB' : 'userA';
 
     // 检查四个方向上相邻的3个位置
     for (let i = 1; i <= 3; i++) {
@@ -175,7 +173,7 @@ function checkDirectionScore(col, row, deltaRow, deltaCol) {
         let cell = board.children[cellIndex];
 
         if (cell.hasChildNodes()) {
-            if (cell.firstChild.classList.contains(currentPlayer)) {
+            if (cell.firstChild.classList.contains(player)) {
                 score += 10; // 增加得分如果相邻位置有AI的棋子
             } else if (cell.firstChild.classList.contains(opponent)) {
                 score += 5; // 增加得分如果相邻位置有对手的棋子
@@ -199,11 +197,53 @@ function createMockPiece(player) {
     return mockPiece;
 }
 
+function evaluateMove(cell, situation) {
+    const col = getColumnIndex(cell);
+    const columnCells = getColumnCells(col);
+    const row = columnCells.indexOf(cell);
+
+    // 根据当前策略调节权重
+    const strategyMultiplier = situation === 'defensive' ? 0.9 : 1.1;
+
+    // 模拟放置棋子评估潜在分数
+    const mockPiece = createMockPiece(AI_PLAYER);
+    cell.appendChild(mockPiece);
+    const baseScore = evaluatePositionScore(col, row, AI_PLAYER);
+
+    // 如果此落子能让下一步形成双威胁，给予额外奖励
+    const followUpScore = countImmediateThreats(AI_PLAYER) * 15;
+
+    cell.removeChild(mockPiece);
+
+    return baseScore * strategyMultiplier + followUpScore;
+}
+
+function countImmediateThreats(player) {
+    let threatCount = 0;
+
+    for (let col = 0; col < columns; col++) {
+        const columnCells = getColumnCells(col);
+        for (let row = columnCells.length - 1; row >= 0; row--) {
+            if (!columnCells[row].hasChildNodes()) {
+                const mockPiece = createMockPiece(player);
+                columnCells[row].appendChild(mockPiece);
+                if (checkWin(player)) {
+                    threatCount++;
+                }
+                columnCells[row].removeChild(mockPiece);
+                break;
+            }
+        }
+    }
+
+    return threatCount;
+}
+
 // 将点击事件处理封装成独立的函数
 function handleClick(event) {
-    if (currentPlayer === 'userA' && !gameEnded) {
+    if (currentPlayer === HUMAN_PLAYER && !gameEnded) {
         setTimeout(function () {
-            if (currentPlayer === 'userB') {
+            if (currentPlayer === AI_PLAYER) {
                 makeAIDecision();
             }
         }, 1000);
@@ -216,11 +256,11 @@ function findDefensiveMove() {
         for (let row = columnCells.length - 1; row >= 0; row--) {
             if (!columnCells[row].hasChildNodes()) {
                 // 模拟放置对手棋子
-                let mockPiece = createMockPiece('userA');
+                let mockPiece = createMockPiece(HUMAN_PLAYER);
                 columnCells[row].appendChild(mockPiece);
 
                 // 检查对手是否能赢
-                if (checkWin('userA')) {
+                if (checkWin(HUMAN_PLAYER)) {
                     columnCells[row].removeChild(mockPiece);
                     return columnCells[row];
                 }
@@ -239,11 +279,11 @@ function findOffensiveMove() {
         for (let row = columnCells.length - 1; row >= 0; row--) {
             if (!columnCells[row].hasChildNodes()) {
                 // 模拟放置自己的棋子
-                let mockPiece = createMockPiece('userB');
+                let mockPiece = createMockPiece(AI_PLAYER);
                 columnCells[row].appendChild(mockPiece);
 
                 // 检查自己是否能赢
-                if (checkWin('userB')) {
+                if (checkWin(AI_PLAYER)) {
                     columnCells[row].removeChild(mockPiece);
                     return columnCells[row];
                 }
@@ -254,18 +294,4 @@ function findOffensiveMove() {
         }
     }
     return null;
-}
-// 随机移动
-function randomMove() {
-    let validCells = [];
-    for (let col = 0; col < columns; col++) {
-        let columnCells = getColumnCells(col);
-        for (let row = columnCells.length - 1; row >= 0; row--) {
-            if (!columnCells[row].hasChildNodes()) {
-                validCells.push(columnCells[row]);
-                break;
-            }
-        }
-    }
-    return validCells[Math.floor(Math.random() * validCells.length)];
 }
