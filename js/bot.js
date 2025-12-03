@@ -48,16 +48,25 @@ function findBestMove() {
     if (candidateMoves.length === 0) return null;
 
     const situation = assessSituation();
-    const scoredMoves = candidateMoves.map((cell) => ({
-        cell,
-        score: evaluateMove(cell, situation)
-    }));
+    const scoredMoves = candidateMoves.map((cell) => {
+        const evaluation = evaluateMove(cell, situation);
+        return {
+            cell,
+            score: evaluation.score,
+            opponentThreats: evaluation.opponentThreats
+        };
+    });
 
-    scoredMoves.sort((a, b) => b.score - a.score);
-    const bestScore = scoredMoves[0].score;
+    // 先筛选出不会给对手留下立刻获胜机会的落子
+    const minThreats = Math.min(...scoredMoves.map(move => move.opponentThreats));
+    const safestMoves = scoredMoves.filter(move => move.opponentThreats === minThreats);
+
+    // 在最安全的候选中按评分排序
+    safestMoves.sort((a, b) => b.score - a.score);
+    const bestScore = safestMoves[0].score;
 
     // 在最佳分数的候选中随机挑选，避免过于机械
-    const topChoices = scoredMoves.filter(move => move.score === bestScore);
+    const topChoices = safestMoves.filter(move => move.score === bestScore);
     return topChoices[Math.floor(Math.random() * topChoices.length)].cell;
 }
 
@@ -213,9 +222,17 @@ function evaluateMove(cell, situation) {
     // 如果此落子能让下一步形成双威胁，给予额外奖励
     const followUpScore = countImmediateThreats(AI_PLAYER) * 15;
 
+    // 避免送出对手下一回合的直接获胜机会
+    const opponentThreats = countImmediateThreats(HUMAN_PLAYER);
+
     cell.removeChild(mockPiece);
 
-    return baseScore * strategyMultiplier + followUpScore;
+    const safetyPenalty = opponentThreats * 50;
+
+    return {
+        score: baseScore * strategyMultiplier + followUpScore - safetyPenalty,
+        opponentThreats
+    };
 }
 
 function countImmediateThreats(player) {
